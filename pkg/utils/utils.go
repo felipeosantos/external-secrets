@@ -18,12 +18,16 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5" //nolint:gosec
+	"crypto/rsa"
+	"crypto/sha1"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"hash"
 	"net"
 	"net/url"
 	"reflect"
@@ -41,13 +45,16 @@ import (
 	esv1alpha1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1alpha1"
 	esv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	esmeta "github.com/external-secrets/external-secrets/apis/meta/v1"
+	"github.com/external-secrets/external-secrets/pkg/provider/senhasegura/dsm"
 	"github.com/external-secrets/external-secrets/pkg/template/v2"
 	"github.com/external-secrets/external-secrets/pkg/utils/resolvers"
 )
 
 const (
-	errParse   = "unable to parse transform template: %s"
-	errExecute = "unable to execute transform template: %s"
+	errParse    = "unable to parse transform template: %s"
+	errExecute  = "unable to execute transform template: %s"
+	errCastType = "could not apply cast type to %v"
+	errParsePK  = "could not apply parse of private key type to %v in %v"
 )
 
 var (
@@ -640,4 +647,84 @@ func getCertFromConfigMap(ctx context.Context, namespace string, c client.Client
 	}
 
 	return []byte(val), nil
+}
+
+func Decrypt(client *esv1beta1.SecretsClient, strategy esv1beta1.ExternalSecretDecryptingStrategy, in []byte) ([]byte, error) {
+	switch strategy.Scheme {
+	case esv1beta1.ExternalSecretDecryptSchemeNone:
+		return in, nil
+	case esv1beta1.ExternalSecretDecryptSchemeRSAOAEP:
+
+		privateKey, err := getPrivateKeyDecryptProvider(client)
+		if err != nil {
+			return nil, err
+		}
+
+		rsaPrivateKey, err := parseRsaPrivateKeyDecryptProvider(strategy.PrivateKeyType, privateKey)
+		if err != nil {
+			return nil, err
+		}
+
+		out, err := rsa.DecryptOAEP(getHash(strategy.Hash), nil, rsaPrivateKey, in, nil)
+		if err != nil {
+			return nil, err
+		}
+		return out, nil
+	default:
+		return nil, fmt.Errorf("decrypting strategy %v is not supported", strategy.Scheme)
+	}
+}
+
+func getPrivateKeyDecryptProvider(client *esv1beta1.SecretsClient) (string, error) {
+
+	objClient := *client
+
+	switch objClient.(type) {
+	case *dsm.DSM:
+		dsmClient, ok := objClient.(*dsm.DSM)
+		if !ok {
+			return "", fmt.Errorf(errCastType, "dsm.DSM")
+		}
+		return dsmClient.GetPrivateKeyDecrypt()
+	default:
+		return "", nil
+	}
+}
+
+func parseRsaPrivateKeyDecryptProvider(pkType esv1beta1.ExternalSecretDecryptingPKType, privateKey string) (*rsa.PrivateKey, error) {
+
+	switch pkType {
+	case esv1beta1.ExternalSecretDecryptPKTypePKCS8:
+		pemBlock, _ := pem.Decode([]byte(privateKey))
+		if pemBlock == nil {
+			return nil, fmt.Errorf("failed to decode PEM block")
+		}
+
+		parsedPrivateKey, err := x509.ParsePKCS8PrivateKey(pemBlock.Bytes)
+		if err != nil {
+			return nil, err
+		}
+
+		rsaPrivateKey, isValid := parsedPrivateKey.(*rsa.PrivateKey)
+		if !isValid {
+			return nil, fmt.Errorf(errParsePK, esv1beta1.ExternalSecretDecryptPKTypePKCS8, "RSA")
+		}
+
+		return rsaPrivateKey, nil
+
+	default:
+		return nil, fmt.Errorf("parse private key %v is not supported", pkType)
+	}
+}
+
+func getHash(hash esv1beta1.ExternalSecretDecryptingHash) hash.Hash {
+
+	switch hash {
+	case esv1beta1.ExternalSecretDecryptHashSHA1:
+
+		return sha1.New()
+
+	default:
+		return sha256.New()
+	}
 }
