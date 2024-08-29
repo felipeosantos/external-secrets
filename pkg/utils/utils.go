@@ -679,6 +679,8 @@ func parseRsaPrivateKeyDecryptProvider(pkType esv1beta1.ExternalSecretDecrypting
 	}
 
 	switch pkType {
+	case esv1beta1.ExternalSecretDecryptPKTypeNone:
+		return &rsa.PrivateKey{}, nil
 	case esv1beta1.ExternalSecretDecryptPKTypePKCS8:
 		parsedPrivateKey, err := x509.ParsePKCS8PrivateKey(pemBlock.Bytes)
 		if err != nil {
@@ -702,6 +704,8 @@ func parseRsaPrivateKeyDecryptProvider(pkType esv1beta1.ExternalSecretDecrypting
 
 func getHash(hash esv1beta1.ExternalSecretDecryptingHash) hash.Hash {
 	switch hash {
+	case esv1beta1.ExternalSecretDecryptHashNone:
+		return sha256.New()
 	case esv1beta1.ExternalSecretDecryptHashSHA1:
 		return sha1.New()
 	case esv1beta1.ExternalSecretDecryptHashSHA256:
