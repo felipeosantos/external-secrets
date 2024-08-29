@@ -109,6 +109,8 @@ spec:
                                     enum:
                                       - None
                                       - SHA1
+                                      - SHA256
+                                      - SHA512
                                     type: string
                                   privateKeyType:
                                     default: PKCS8
@@ -116,6 +118,7 @@ spec:
                                     enum:
                                       - None
                                       - PKCS8
+                                      - PKCS1
                                     type: string
                                   scheme:
                                     default: None
@@ -234,6 +237,8 @@ spec:
                                     enum:
                                       - None
                                       - SHA1
+                                      - SHA256
+                                      - SHA512
                                     type: string
                                   privateKeyType:
                                     default: PKCS8
@@ -241,6 +246,7 @@ spec:
                                     enum:
                                       - None
                                       - PKCS8
+                                      - PKCS1
                                     type: string
                                   scheme:
                                     default: None
@@ -5685,6 +5691,8 @@ spec:
                                 enum:
                                   - None
                                   - SHA1
+                                  - SHA256
+                                  - SHA512
                                 type: string
                               privateKeyType:
                                 default: PKCS8
@@ -5692,6 +5700,7 @@ spec:
                                 enum:
                                   - None
                                   - PKCS8
+                                  - PKCS1
                                 type: string
                               scheme:
                                 default: None
@@ -5810,6 +5819,8 @@ spec:
                                 enum:
                                   - None
                                   - SHA1
+                                  - SHA256
+                                  - SHA512
                                 type: string
                               privateKeyType:
                                 default: PKCS8
@@ -5817,6 +5828,7 @@ spec:
                                 enum:
                                   - None
                                   - PKCS8
+                                  - PKCS1
                                 type: string
                               scheme:
                                 default: None

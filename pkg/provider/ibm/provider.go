@@ -713,3 +713,8 @@ func formSecretMap(secretData any) (map[string]any, error) {
 	}
 	return secretDataMap, nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (ibm *providerIBM) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New(errNotImplemented)
+}

@@ -145,3 +145,8 @@ func (c *client) getSecret(_ context.Context, ref esv1beta1.ExternalSecretDataRe
 	}
 	return c.api.Secret(id)
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *client) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

@@ -465,3 +465,8 @@ func (c *MockFakeClient) Close(_ context.Context) error {
 	c.closeCalled = true
 	return nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *MockFakeClient) GetPrivateKeyDecrypt() (string, error) {
+	return "", nil
+}

@@ -185,3 +185,8 @@ func init() {
 		PasswordDepot: &esv1beta1.PasswordDepotProvider{},
 	})
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (p *PasswordDepot) GetPrivateKeyDecrypt() (string, error) {
+	return "", fmt.Errorf(errNotImplemented, "GetPrivateKeyDecrypt")
+}

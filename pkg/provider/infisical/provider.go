@@ -157,3 +157,8 @@ func (p *Provider) ValidateStore(store esv1beta1.GenericStore) (admission.Warnin
 
 	return nil, nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (p *Provider) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

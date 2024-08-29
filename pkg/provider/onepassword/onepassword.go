@@ -695,3 +695,8 @@ func init() {
 		OnePassword: &esv1beta1.OnePasswordProvider{},
 	})
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (provider *ProviderOnePassword) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

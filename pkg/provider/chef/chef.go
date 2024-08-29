@@ -348,3 +348,8 @@ func (providerchef *Providerchef) SecretExists(_ context.Context, _ v1beta1.Push
 func (providerchef *Providerchef) Capabilities() v1beta1.SecretStoreCapabilities {
 	return v1beta1.SecretStoreReadOnly
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (providerchef *Providerchef) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New(errNotImplemented)
+}

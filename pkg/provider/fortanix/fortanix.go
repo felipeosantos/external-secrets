@@ -116,3 +116,8 @@ func (c *client) GetAllSecrets(_ context.Context, _ esv1beta1.ExternalSecretFind
 func (c *client) Close(context.Context) error {
 	return nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *client) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

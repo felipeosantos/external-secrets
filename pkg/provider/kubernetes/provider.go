@@ -158,3 +158,8 @@ func isReferentSpec(prov *esv1beta1.KubernetesProvider) bool {
 func (p *Provider) Close(_ context.Context) error {
 	return nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *Client) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

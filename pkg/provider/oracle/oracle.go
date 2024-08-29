@@ -616,3 +616,8 @@ func init() {
 		Oracle: &esv1beta1.OracleProvider{},
 	})
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (vms *VaultManagementService) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

@@ -30,7 +30,6 @@ import (
 
 	esv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	genv1alpha1 "github.com/external-secrets/external-secrets/apis/generators/v1alpha1"
-
 	// Loading registered providers.
 	"github.com/external-secrets/external-secrets/pkg/controllers/secretstore"
 	"github.com/external-secrets/external-secrets/pkg/utils"
@@ -103,7 +102,7 @@ func (r *Reconciler) handleSecretData(ctx context.Context, i int, externalSecret
 	if err != nil {
 		return fmt.Errorf(errDecode, "spec.data", i, err)
 	}
-	secretData, err = utils.Decrypt(&client, secretRef.RemoteRef.DecryptingStrategy, secretData)
+	secretData, err = utils.Decrypt(client, secretRef.RemoteRef.DecryptingStrategy, secretData)
 	if err != nil {
 		return fmt.Errorf(errDecrypt, "spec.data", i, err)
 	}

@@ -493,3 +493,8 @@ func splitNameAndPath(ref string) (name, path string, ok bool) {
 	ok = true
 	return
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *client) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

@@ -94,6 +94,9 @@ type SecretsClient interface {
 	GetAllSecrets(ctx context.Context, ref ExternalSecretFind) (map[string][]byte, error)
 
 	Close(ctx context.Context) error
+
+	// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data
+	GetPrivateKeyDecrypt() (string, error)
 }
 
 var NoSecretErr = NoSecretError{}

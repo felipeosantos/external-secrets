@@ -181,3 +181,8 @@ func (v *Client) Reset() {
 		return v, nil
 	})
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (v *Client) GetPrivateKeyDecrypt() (string, error) {
+	return "", nil
+}

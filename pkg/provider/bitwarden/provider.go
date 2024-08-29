@@ -134,3 +134,8 @@ func newHTTPSClient(ctx context.Context, c client.Client, storeKind, namespace s
 
 	return &http.Client{Transport: tr, Timeout: time.Second * 10}, nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (p *Provider) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

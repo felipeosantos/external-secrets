@@ -150,3 +150,8 @@ func (c *Client) Validate() (esv1beta1.ValidationResult, error) {
 func (c *Client) Close(_ context.Context) error {
 	return nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *Client) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

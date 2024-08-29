@@ -434,3 +434,8 @@ func (a *akeylessBase) getAkeylessHTTPClient(ctx context.Context, provider *esv1
 	client.Transport = &http.Transport{TLSClientConfig: tlsConf}
 	return client, nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (a *Akeyless) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New(errNotImplemented)
+}

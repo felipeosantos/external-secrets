@@ -294,3 +294,8 @@ func assureLoggedIn(ctx context.Context, client Client) error {
 
 	return client.Login(ctx)
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (provider *ProviderPassbolt) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New(errNotImplemented)
+}

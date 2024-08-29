@@ -129,3 +129,8 @@ func init() {
 		Gitlab: &esv1beta1.GitlabProvider{},
 	})
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (g *gitlabBase) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

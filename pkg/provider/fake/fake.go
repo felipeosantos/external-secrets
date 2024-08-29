@@ -270,3 +270,8 @@ func init() {
 		Fake: &esv1beta1.FakeProvider{},
 	})
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (p *Provider) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

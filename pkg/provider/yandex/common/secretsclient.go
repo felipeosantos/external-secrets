@@ -69,3 +69,8 @@ func (c *yandexCloudSecretsClient) GetAllSecrets(_ context.Context, _ esv1beta1.
 func (c *yandexCloudSecretsClient) Close(_ context.Context) error {
 	return nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *yandexCloudSecretsClient) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New(errNotImplemented)
+}

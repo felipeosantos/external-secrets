@@ -128,3 +128,8 @@ func (c *client) Close(ctx context.Context) error {
 	}
 	return nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *client) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

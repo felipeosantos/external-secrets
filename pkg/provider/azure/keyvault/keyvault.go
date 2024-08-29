@@ -1190,3 +1190,8 @@ func okByTags(ref esv1beta1.ExternalSecretFind, secret keyvault.SecretItem) bool
 	}
 	return tagsFound
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (a *Azure) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

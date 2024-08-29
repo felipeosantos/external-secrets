@@ -591,3 +591,8 @@ func getDataByProperty(data []byte, property string) gjson.Result {
 	}
 	return gjson.Get(payload, property)
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *Client) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

@@ -246,3 +246,8 @@ func externalSecretsFormat(secrets dClient.Secrets) map[string][]byte {
 	}
 	return converted
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *Client) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

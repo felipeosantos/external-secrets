@@ -507,3 +507,8 @@ func (s *Secret) toString() (string, error) {
 
 	return string(secretJSON), nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (c *Client) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

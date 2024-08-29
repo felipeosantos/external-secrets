@@ -552,3 +552,8 @@ func (pm *ParameterStore) Validate() (esv1beta1.ValidationResult, error) {
 	}
 	return esv1beta1.ValidationResultReady, nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (pm *ParameterStore) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

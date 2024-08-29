@@ -214,3 +214,8 @@ func (w *WebHook) Validate() (esv1beta1.ValidationResult, error) {
 	}
 	return esv1beta1.ValidationResultReady, nil
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (w *WebHook) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New(errNotImplemented)
+}

@@ -614,3 +614,8 @@ func (sm *SecretsManager) putSecretValueWithContext(ctx context.Context, secretI
 
 	return err
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (sm *SecretsManager) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New("not implemented")
+}

@@ -357,3 +357,8 @@ func init() {
 		Alibaba: &esv1beta1.AlibabaProvider{},
 	})
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (kms *KeyManagementService) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New(errNotImplemented)
+}

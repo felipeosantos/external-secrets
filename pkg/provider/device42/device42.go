@@ -181,3 +181,8 @@ func init() {
 		Device42: &esv1beta1.Device42Provider{},
 	})
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (p *Device42) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New(errNotImplemented)
+}

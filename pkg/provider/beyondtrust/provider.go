@@ -336,3 +336,8 @@ func init() {
 		Beyondtrust: &esv1beta1.BeyondtrustProvider{},
 	})
 }
+
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (p *Provider) GetPrivateKeyDecrypt() (string, error) {
+	return "", errors.New(errNotImplemented)
+}

@@ -1284,7 +1284,7 @@ func TestDecrypt(t *testing.T) {
 				t.Errorf("DecodeString() error = %v", err)
 				return
 			}
-			got, err := Decrypt(&tt.args.client, tt.args.strategy, out)
+			got, err := Decrypt(tt.args.client, tt.args.strategy, out)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Decrypt() error = %v, wantErr %v", err, tt.wantErr)
 				return

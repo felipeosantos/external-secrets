@@ -80,6 +80,11 @@ func (p *PP) ValidateStore(_ GenericStore) (admission.Warnings, error) {
 	return nil, nil
 }
 
+// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data.
+func (p *PP) GetPrivateKeyDecrypt() (string, error) {
+	return "", nil
+}
+
 // TestRegister tests if the Register function
 // (1) panics if it tries to register something invalid
 // (2) stores the correct provider.
