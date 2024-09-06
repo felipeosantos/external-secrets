@@ -17,9 +17,9 @@ package utils
 import (
 	"bytes"
 	"context"
+	"crypto"
 	"crypto/md5" //nolint:gosec
 	"crypto/rsa"
-	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
 	"crypto/x509"
@@ -707,7 +707,7 @@ func getHash(hash esv1beta1.ExternalSecretDecryptingHash) hash.Hash {
 	case esv1beta1.ExternalSecretDecryptHashNone:
 		return sha256.New()
 	case esv1beta1.ExternalSecretDecryptHashSHA1:
-		return sha1.New()
+		return crypto.SHA1.New()
 	case esv1beta1.ExternalSecretDecryptHashSHA256:
 		return sha256.New()
 	case esv1beta1.ExternalSecretDecryptHashSHA512:
