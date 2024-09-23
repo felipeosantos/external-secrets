@@ -268,20 +268,23 @@ const (
 	ExternalSecretDecryptSchemeRSAOAEP ExternalSecretDecryptingScheme = "RSA-OAEP"
 )
 
-// +kubebuilder:validation:Enum=None;SHA1
+// +kubebuilder:validation:Enum=None;SHA1;SHA256;SHA512
 type ExternalSecretDecryptingHash string
 
 const (
-	ExternalSecretDecryptHashNone ExternalSecretDecryptingHash = "None"
-	ExternalSecretDecryptHashSHA1 ExternalSecretDecryptingHash = "SHA1"
+	ExternalSecretDecryptHashNone   ExternalSecretDecryptingHash = "None"
+	ExternalSecretDecryptHashSHA1   ExternalSecretDecryptingHash = "SHA1"
+	ExternalSecretDecryptHashSHA256 ExternalSecretDecryptingHash = "SHA256"
+	ExternalSecretDecryptHashSHA512 ExternalSecretDecryptingHash = "SHA512"
 )
 
-// +kubebuilder:validation:Enum=None;PKCS8
+// +kubebuilder:validation:Enum=None;PKCS8;PKCS1
 type ExternalSecretDecryptingPKType string
 
 const (
 	ExternalSecretDecryptPKTypeNone  ExternalSecretDecryptingPKType = "None"
 	ExternalSecretDecryptPKTypePKCS8 ExternalSecretDecryptingPKType = "PKCS8"
+	ExternalSecretDecryptPKTypePKCS1 ExternalSecretDecryptingPKType = "PKCS1"
 )
 
 type ExternalSecretDecryptingStrategy struct {
