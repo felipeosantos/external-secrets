@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: clusterexternalsecrets.external-secrets.io
@@ -713,7 +713,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: clustersecretstores.external-secrets.io
@@ -4217,6 +4217,41 @@ spec:
                         - database
                         - host
                       type: object
+                    previder:
+                      description: Previder configures this store to sync secrets using the Previder provider
+                      properties:
+                        auth:
+                          description: PreviderAuth contains a secretRef for credentials.
+                          properties:
+                            secretRef:
+                              description: PreviderAuthSecretRef holds secret references for Previder Vault credentials.
+                              properties:
+                                accessToken:
+                                  description: The AccessToken is used for authentication
+                                  properties:
+                                    key:
+                                      description: |-
+                                        The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be
+                                        defaulted, in others it may be required.
+                                      type: string
+                                    name:
+                                      description: The name of the Secret resource being referred to.
+                                      type: string
+                                    namespace:
+                                      description: |-
+                                        Namespace of the resource being referred to. Ignored if referent is not cluster-scoped. cluster-scoped defaults
+                                        to the namespace of the referent.
+                                      type: string
+                                  type: object
+                              required:
+                                - accessToken
+                              type: object
+                          type: object
+                        baseUri:
+                          type: string
+                      required:
+                        - auth
+                      type: object
                     pulumi:
                       description: Pulumi configures this store to sync secrets using the Pulumi provider
                       properties:
@@ -4242,7 +4277,7 @@ spec:
                               type: object
                           type: object
                         apiUrl:
-                          default: https://api.pulumi.com/api/preview
+                          default: https://api.pulumi.com/api/esc
                           description: APIURL is the URL of the Pulumi API.
                           type: string
                         environment:
@@ -4257,10 +4292,14 @@ spec:
                             Organization are a space to collaborate on shared projects and stacks.
                             To create a new organization, visit https://app.pulumi.com/ and click "New Organization".
                           type: string
+                        project:
+                          description: Project is the name of the Pulumi ESC project the environment belongs to.
+                          type: string
                       required:
                         - accessToken
                         - environment
                         - organization
+                        - project
                       type: object
                     scaleway:
                       description: Scaleway
@@ -5322,7 +5361,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: externalsecrets.external-secrets.io
@@ -6187,7 +6226,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   name: pushsecrets.external-secrets.io
 spec:
   group: external-secrets.io
@@ -6564,7 +6603,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: secretstores.external-secrets.io
@@ -10068,6 +10107,41 @@ spec:
                         - database
                         - host
                       type: object
+                    previder:
+                      description: Previder configures this store to sync secrets using the Previder provider
+                      properties:
+                        auth:
+                          description: PreviderAuth contains a secretRef for credentials.
+                          properties:
+                            secretRef:
+                              description: PreviderAuthSecretRef holds secret references for Previder Vault credentials.
+                              properties:
+                                accessToken:
+                                  description: The AccessToken is used for authentication
+                                  properties:
+                                    key:
+                                      description: |-
+                                        The key of the entry in the Secret resource's `data` field to be used. Some instances of this field may be
+                                        defaulted, in others it may be required.
+                                      type: string
+                                    name:
+                                      description: The name of the Secret resource being referred to.
+                                      type: string
+                                    namespace:
+                                      description: |-
+                                        Namespace of the resource being referred to. Ignored if referent is not cluster-scoped. cluster-scoped defaults
+                                        to the namespace of the referent.
+                                      type: string
+                                  type: object
+                              required:
+                                - accessToken
+                              type: object
+                          type: object
+                        baseUri:
+                          type: string
+                      required:
+                        - auth
+                      type: object
                     pulumi:
                       description: Pulumi configures this store to sync secrets using the Pulumi provider
                       properties:
@@ -10093,7 +10167,7 @@ spec:
                               type: object
                           type: object
                         apiUrl:
-                          default: https://api.pulumi.com/api/preview
+                          default: https://api.pulumi.com/api/esc
                           description: APIURL is the URL of the Pulumi API.
                           type: string
                         environment:
@@ -10108,10 +10182,14 @@ spec:
                             Organization are a space to collaborate on shared projects and stacks.
                             To create a new organization, visit https://app.pulumi.com/ and click "New Organization".
                           type: string
+                        project:
+                          description: Project is the name of the Pulumi ESC project the environment belongs to.
+                          type: string
                       required:
                         - accessToken
                         - environment
                         - organization
+                        - project
                       type: object
                     scaleway:
                       description: Scaleway
@@ -11173,7 +11251,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: acraccesstokens.generators.external-secrets.io
@@ -11367,7 +11445,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: ecrauthorizationtokens.generators.external-secrets.io
@@ -11535,7 +11613,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: fakes.generators.external-secrets.io
@@ -11612,7 +11690,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: gcraccesstokens.generators.external-secrets.io
@@ -11741,7 +11819,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: githubaccesstokens.generators.external-secrets.io
@@ -11844,7 +11922,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: passwords.generators.external-secrets.io
@@ -11943,7 +12021,70 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
+  name: uuids.generators.external-secrets.io
+spec:
+  group: generators.external-secrets.io
+  names:
+    categories:
+      - password
+    kind: UUID
+    listKind: UUIDList
+    plural: uuids
+    shortNames:
+      - uuids
+    singular: uuid
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: |-
+            Password generates a random password based on the
+            configuration parameters in spec.
+            You can specify the length, characterset and other attributes.
+          properties:
+            apiVersion:
+              description: |-
+                APIVersion defines the versioned schema of this representation of an object.
+                Servers should convert recognized schemas to the latest internal value, and
+                may reject unrecognized values.
+                More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+              type: string
+            kind:
+              description: |-
+                Kind is a string value representing the REST resource this object represents.
+                Servers may infer this from the endpoint the client submits requests to.
+                Cannot be updated.
+                In CamelCase.
+                More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: UUIDSpec controls the behavior of the uuid generator.
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
+  conversion:
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions:
+        - v1
+      clientConfig:
+        service:
+          name: kubernetes
+          namespace: default
+          path: /convert
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: vaultdynamicsecrets.generators.external-secrets.io
@@ -12641,7 +12782,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.16.3
   labels:
     external-secrets.io/component: controller
   name: webhooks.generators.external-secrets.io
