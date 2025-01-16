@@ -19,8 +19,10 @@ We want to cover the following cases:
 
 | ESO Version | Kubernetes Version | Release Date | End of Life     |
 | ----------- | ------------------ | ------------ | --------------- |
-| 0.10.x      | 1.19 → 1.31        | Aug 3, 2024  | Release of 0.12 |
-| 0.9.x       | 1.19 → 1.30        | Jun 22, 2023 | Release of 0.11 |
+| 0.12.x      | 1.19 → 1.31        | Dec 24, 2024 | Release of 0.14 |
+| 0.11.x      | 1.19 → 1.31        | Dec 2, 2024  | Release of 0.13 |
+| 0.10.x      | 1.19 → 1.31        | Aug 3, 2024  | Dec 24, 2024    |
+| 0.9.x       | 1.19 → 1.30        | Jun 22, 2023 | Dec 2, 2024     |
 | 0.8.x       | 1.19 → 1.28        | Mar 16, 2023 | Aug 3, 2024     |
 | 0.7.x       | 1.19 → 1.26        | Dec 11, 2022 | Jun 22, 2023    |
 | 0.6.x       | 1.19 → 1.24        | Oct 9, 2022  | Mar 16, 2023    |
@@ -33,7 +35,7 @@ We want to cover the following cases:
 The following table describes the stability level of each provider and who's responsible.
 
 | Provider                                                                                                   | Stability |                                                                                                                                                                              Maintainer |
-|------------------------------------------------------------------------------------------------------------|:---------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| ---------------------------------------------------------------------------------------------------------- | :-------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | [AWS Secrets Manager](https://external-secrets.io/latest/provider/aws-secrets-manager/)                    |  stable   |                                                                                                                                 [external-secrets](https://github.com/external-secrets) |
 | [AWS Parameter Store](https://external-secrets.io/latest/provider/aws-parameter-store/)                    |  stable   |                                                                                                                                 [external-secrets](https://github.com/external-secrets) |
 | [Hashicorp Vault](https://external-secrets.io/latest/provider/hashicorp-vault/)                            |  stable   |                                                                                                                                 [external-secrets](https://github.com/external-secrets) |
@@ -45,7 +47,7 @@ The following table describes the stability level of each provider and who's res
 | [GitLab Variables](https://external-secrets.io/latest/provider/gitlab-variables/)                          |   alpha   |                                                                                                                                                  [@Jabray5](https://github.com/Jabray5) |
 | Alibaba Cloud KMS                                                                                          |   alpha   |                                                                                                                                          [@ElsaChelala](https://github.com/ElsaChelala) |
 | [Oracle Vault](https://external-secrets.io/latest/provider/oracle-vault)                                   |   alpha   |                                                                                                 [@KianTigger](https://github.com/KianTigger) [@EladGabay](https://github.com/EladGabay) |
-| [Akeyless](https://external-secrets.io/latest/provider/akeyless)                                           |   alpha   |                                                                                                                                    [@renanaAkeyless](https://github.com/renanaAkeyless) |
+| [Akeyless](https://external-secrets.io/latest/provider/akeyless)                                           |  stable   |                                                                                                                                 [external-secrets](https://github.com/external-secrets) |
 | [1Password](https://external-secrets.io/latest/provider/1password-automation)                              |   alpha   |                                                                                       [@SimSpaceCorp](https://github.com/Simspace) [@snarlysodboxer](https://github.com/snarlysodboxer) |
 | [Generic Webhook](https://external-secrets.io/latest/provider/webhook)                                     |   alpha   |                                                                                                                                                  [@willemm](https://github.com/willemm) |
 | [senhasegura DevOps Secrets Management (DSM)](https://external-secrets.io/latest/provider/senhasegura-dsm) |   alpha   |                                                                                                                                                    [@lfraga](https://github.com/lfraga) |
@@ -68,7 +70,7 @@ The following table describes the stability level of each provider and who's res
 The following table show the support for features across different providers.
 
 | Provider                  | find by name | find by tags | metadataPolicy Fetch | referent authentication | store validation | push secret | DeletionPolicy Merge/Delete |
-|---------------------------| :----------: | :----------: | :------------------: | :---------------------: | :--------------: |:-----------:|:---------------------------:|
+| ------------------------- | :----------: | :----------: | :------------------: | :---------------------: | :--------------: | :---------: | :-------------------------: |
 | AWS Secrets Manager       |      x       |      x       |          x           |            x            |        x         |      x      |              x              |
 | AWS Parameter Store       |      x       |      x       |          x           |            x            |        x         |      x      |              x              |
 | Hashicorp Vault           |      x       |      x       |          x           |            x            |        x         |      x      |              x              |
@@ -80,7 +82,7 @@ The following table show the support for features across different providers.
 | GitLab Variables          |      x       |      x       |                      |                         |        x         |             |                             |
 | Alibaba Cloud KMS         |              |              |                      |                         |        x         |             |                             |
 | Oracle Vault              |              |              |                      |                         |        x         |             |                             |
-| Akeyless                  |      x       |      x       |                      |                         |        x         |             |                             |
+| Akeyless                  |      x       |      x       |                      |            x            |        x         |      x      |              x              |
 | 1Password                 |      x       |              |                      |                         |        x         |      x      |              x              |
 | Generic Webhook           |              |              |                      |                         |                  |             |              x              |
 | senhasegura DSM           |              |              |                      |                         |        x         |             |                             |

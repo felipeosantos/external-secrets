@@ -16,29 +16,37 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	esmeta "github.com/external-secrets/external-secrets/apis/meta/v1"
 )
 
-// UUIDSpec controls the behavior of the uuid generator.
-type UUIDSpec struct{}
+type QuayAccessTokenSpec struct {
+	// URL configures the Quay instance URL. Defaults to quay.io.
+	URL string `json:"url,omitempty"`
+	// Name of the robot account you are federating with
+	RobotAccount string `json:"robotAccount"`
+	// Name of the service account you are federating with
+	ServiceAccountRef esmeta.ServiceAccountSelector `json:"serviceAccountRef"`
+}
 
-// UUID generates a version 1 UUID (e56657e3-764f-11ef-a397-65231a88c216).
+// QuayAccessToken generates Quay oauth token for pulling/pushing images
 // +kubebuilder:object:root=true
 // +kubebuilder:storageversion
 // +kubebuilder:subresource:status
 // +kubebuilder:metadata:labels="external-secrets.io/component=controller"
-// +kubebuilder:resource:scope=Namespaced,categories={external-secrets, external-secrets-generators},shortName=uuids
-type UUID struct {
+// +kubebuilder:resource:scope=Namespaced,categories={external-secrets, external-secrets-generators}
+type QuayAccessToken struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec UUIDSpec `json:"spec,omitempty"`
+	Spec QuayAccessTokenSpec `json:"spec,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// UUIDList contains a list of ExternalSecret resources.
-type UUIDList struct {
+// QuayAccessTokenList contains a list of ExternalSecret resources.
+type QuayAccessTokenList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Password `json:"items"`
+	Items           []QuayAccessToken `json:"items"`
 }

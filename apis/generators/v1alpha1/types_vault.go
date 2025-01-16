@@ -41,11 +41,20 @@ type VaultDynamicSecretSpec struct {
 	// +kubebuilder:default=Data
 	ResultType VaultDynamicSecretResultType `json:"resultType,omitempty"`
 
+	// Used to configure http retries if failed
+	// +optional
+	RetrySettings *esv1beta1.SecretStoreRetrySettings `json:"retrySettings,omitempty"`
+
 	// Vault provider common spec
 	Provider *esv1beta1.VaultProvider `json:"provider"`
 
 	// Vault path to obtain the dynamic secret from
 	Path string `json:"path"`
+
+	// Do not fail if no secrets are found. Useful for requests where no data is expected.
+	// +optional
+	// +kubebuilder:default=false
+	AllowEmptyResponse bool `json:"allowEmptyResponse,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=Data;Auth
@@ -60,7 +69,7 @@ const (
 // +kubebuilder:storageversion
 // +kubebuilder:subresource:status
 // +kubebuilder:metadata:labels="external-secrets.io/component=controller"
-// +kubebuilder:resource:scope=Namespaced,categories={external-secrets, external-secrets-generators},shortName=vaultdynamicsecret
+// +kubebuilder:resource:scope=Namespaced,categories={external-secrets, external-secrets-generators}
 type VaultDynamicSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
