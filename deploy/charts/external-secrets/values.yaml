@@ -41,6 +41,8 @@ crds:
   createClusterSecretStore: true
   # -- If true, create CRDs for Cluster Generator.
   createClusterGenerator: true
+  # -- If true, create CRDs for Cluster Push Secret.
+  createClusterPushSecret: true
   # -- If true, create CRDs for Push Secret.
   createPushSecret: true
   annotations: {}
@@ -76,8 +78,14 @@ scopedNamespace: ""
 # and implicitly disable cluster stores and cluster external secrets
 scopedRBAC: false
 
+# -- If true the OpenShift finalizer permissions will be added to RBAC
+openshiftFinalizers: true
+
 # -- if true, the operator will process cluster external secret. Else, it will ignore them.
 processClusterExternalSecret: true
+
+# -- if true, the operator will process cluster push secret. Else, it will ignore them.
+processClusterPushSecret: true
 
 # -- if true, the operator will process cluster store. Else, it will ignore them.
 processClusterStore: true
@@ -91,7 +99,7 @@ createOperator: true
 # -- Specifies the number of concurrent ExternalSecret Reconciles external-secret executes at
 # a time.
 concurrent: 1
-# -- Specifices Log Params to the Webhook
+# -- Specifices Log Params to the External Secrets Operator
 log:
   level: info
   timeEncoding: epoch
@@ -242,7 +250,7 @@ podDisruptionBudget:
 hostNetwork: false
 
 webhook:
-  # -- Specifies whether a webhook deployment be created.
+  # -- Specifies whether a webhook deployment be created. If set to false, crds.conversion.enabled should also be set to false otherwise the kubeapi will be hammered because the conversion is looking for a webhook endpoint.
   create: true
   # -- Specifices the time to check if the cert is valid
   certCheckInterval: "5m"
@@ -317,8 +325,8 @@ webhook:
       duration: "8760h"
       # -- Set the revisionHistoryLimit on the Certificate. See
       # https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.CertificateSpec
-      # Defaults to nil.
-      revisionHistoryLimit: ""
+      # Defaults to 0 (ignored).
+      revisionHistoryLimit: 0
       # -- How long before the currently issued certificate’s expiry
       # cert-manager should renew the certificate. See
       # https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.CertificateSpec
@@ -430,7 +438,7 @@ certController:
   create: true
   requeueInterval: "5m"
   replicaCount: 1
-  # -- Specifices Log Params to the Webhook
+  # -- Specifices Log Params to the Certificate Controller
   log:
     level: info
     timeEncoding: epoch

@@ -37,8 +37,7 @@ import (
 )
 
 // getProviderSecretData returns the provider's secret data with the provided ExternalSecret.
-func (r *Reconciler) getProviderSecretData(ctx context.Context, externalSecret *esv1beta1.ExternalSecret) (map[string][]byte, error) {
-	var err error
+func (r *Reconciler) getProviderSecretData(ctx context.Context, externalSecret *esv1beta1.ExternalSecret) (providerData map[string][]byte, err error) {
 	// We MUST NOT create multiple instances of a provider client (mostly due to limitations with GCP)
 	// Clientmanager keeps track of the client instances
 	// that are created during the fetching process and closes clients
@@ -63,9 +62,12 @@ func (r *Reconciler) getProviderSecretData(ctx context.Context, externalSecret *
 		}
 		if commitErr := genState.Commit(); commitErr != nil {
 			r.Log.Error(commitErr, "error committing generator state")
+			// At this point the original error can only be a NoSecretErr
+			// but we should return the commit error here as it's more important.
+			err = commitErr
 		}
 	}()
-	providerData := make(map[string][]byte)
+	providerData = make(map[string][]byte)
 	for i, remoteRef := range externalSecret.Spec.DataFrom {
 		var secretMap map[string][]byte
 
@@ -174,7 +176,7 @@ func (r *Reconciler) handleGenerateSecrets(ctx context.Context, namespace string
 	}
 
 	// validate the keys
-	err = utils.ValidateKeys(secretMap)
+	err = utils.ValidateKeys(r.Log, secretMap)
 	if err != nil {
 		return nil, fmt.Errorf(errInvalidKeys, err)
 	}
@@ -214,7 +216,7 @@ func (r *Reconciler) handleExtractSecrets(ctx context.Context, externalSecret *e
 	}
 
 	// validate the keys
-	err = utils.ValidateKeys(secretMap)
+	err = utils.ValidateKeys(r.Log, secretMap)
 	if err != nil {
 		return nil, fmt.Errorf(errInvalidKeys, err)
 	}
@@ -254,7 +256,7 @@ func (r *Reconciler) handleFindAllSecrets(ctx context.Context, externalSecret *e
 	}
 
 	// validate the keys
-	err = utils.ValidateKeys(secretMap)
+	err = utils.ValidateKeys(r.Log, secretMap)
 	if err != nil {
 		return nil, fmt.Errorf(errInvalidKeys, err)
 	}
