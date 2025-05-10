@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -38,7 +39,7 @@ import (
 	ctrlcfg "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/yaml"
 
-	"github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	esv1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1"
 	genv1alpha1 "github.com/external-secrets/external-secrets/apis/generators/v1alpha1"
 	smmeta "github.com/external-secrets/external-secrets/apis/meta/v1"
 	"github.com/external-secrets/external-secrets/pkg/provider/azure/keyvault"
@@ -176,7 +177,9 @@ func fetchACRAccessToken(acrRefreshToken, _, registryURL, scope string) (string,
 	if err != nil {
 		return "", err
 	}
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 	if res.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("could not generate access token, unexpected status code: %d", res.StatusCode)
 	}
@@ -211,7 +214,9 @@ func fetchACRRefreshToken(aadAccessToken, tenantID, registryURL string) (string,
 	if err != nil {
 		return "", err
 	}
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 	if res.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("count not generate refresh token, unexpected status code %d, expected %d", res.StatusCode, http.StatusOK)
 	}
@@ -231,7 +236,7 @@ func fetchACRRefreshToken(aadAccessToken, tenantID, registryURL string) (string,
 	return refreshToken, nil
 }
 
-func accessTokenForWorkloadIdentity(ctx context.Context, crClient client.Client, kubeClient kcorev1.CoreV1Interface, envType v1beta1.AzureEnvironmentType, serviceAccountRef *smmeta.ServiceAccountSelector, namespace string) (string, error) {
+func accessTokenForWorkloadIdentity(ctx context.Context, crClient client.Client, kubeClient kcorev1.CoreV1Interface, envType esv1.AzureEnvironmentType, serviceAccountRef *smmeta.ServiceAccountSelector, namespace string) (string, error) {
 	aadEndpoint := keyvault.AadEndpointForType(envType)
 	scope := keyvault.ServiceManagementEndpointForType(envType)
 	// if no serviceAccountRef was provided
@@ -244,7 +249,7 @@ func accessTokenForWorkloadIdentity(ctx context.Context, crClient client.Client,
 		if clientID == "" || tenantID == "" || tokenFilePath == "" {
 			return "", errors.New("missing environment variables")
 		}
-		token, err := os.ReadFile(tokenFilePath)
+		token, err := os.ReadFile(filepath.Clean(tokenFilePath))
 		if err != nil {
 			return "", fmt.Errorf("unable to read token file %s: %w", tokenFilePath, err)
 		}
@@ -285,7 +290,7 @@ func accessTokenForWorkloadIdentity(ctx context.Context, crClient client.Client,
 	return tp.OAuthToken(), nil
 }
 
-func accessTokenForManagedIdentity(ctx context.Context, envType v1beta1.AzureEnvironmentType, identityID string) (string, error) {
+func accessTokenForManagedIdentity(ctx context.Context, envType esv1.AzureEnvironmentType, identityID string) (string, error) {
 	// handle managed identity
 	var opts *azidentity.ManagedIdentityCredentialOptions
 	if strings.Contains(identityID, "/") {
@@ -311,7 +316,7 @@ func accessTokenForManagedIdentity(ctx context.Context, envType v1beta1.AzureEnv
 	return accessToken.Token, nil
 }
 
-func (g *Generator) accessTokenForServicePrincipal(ctx context.Context, crClient client.Client, namespace string, envType v1beta1.AzureEnvironmentType, tenantID string, idRef, secretRef smmeta.SecretKeySelector) (string, error) {
+func (g *Generator) accessTokenForServicePrincipal(ctx context.Context, crClient client.Client, namespace string, envType esv1.AzureEnvironmentType, tenantID string, idRef, secretRef smmeta.SecretKeySelector) (string, error) {
 	cid, err := secretKeyRef(ctx, crClient, namespace, idRef)
 	if err != nil {
 		return "", err
@@ -360,16 +365,16 @@ func secretKeyRef(ctx context.Context, crClient client.Client, namespace string,
 	return value, nil
 }
 
-func audienceForType(t v1beta1.AzureEnvironmentType) string {
+func audienceForType(t esv1.AzureEnvironmentType) string {
 	suffix := ".default"
 	switch t {
-	case v1beta1.AzureEnvironmentChinaCloud:
+	case esv1.AzureEnvironmentChinaCloud:
 		return azure.ChinaCloud.TokenAudience + suffix
-	case v1beta1.AzureEnvironmentGermanCloud:
+	case esv1.AzureEnvironmentGermanCloud:
 		return azure.GermanCloud.TokenAudience + suffix
-	case v1beta1.AzureEnvironmentUSGovernmentCloud:
+	case esv1.AzureEnvironmentUSGovernmentCloud:
 		return azure.USGovernmentCloud.TokenAudience + suffix
-	case v1beta1.AzureEnvironmentPublicCloud, "":
+	case esv1.AzureEnvironmentPublicCloud, "":
 		return azure.PublicCloud.TokenAudience + suffix
 	}
 	return azure.PublicCloud.TokenAudience + suffix

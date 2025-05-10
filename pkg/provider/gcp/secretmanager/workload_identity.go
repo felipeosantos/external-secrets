@@ -42,7 +42,7 @@ import (
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlcfg "sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	esv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	esv1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1"
 	"github.com/external-secrets/external-secrets/pkg/constants"
 	"github.com/external-secrets/external-secrets/pkg/metrics"
 )
@@ -107,7 +107,7 @@ func newWorkloadIdentity(ctx context.Context, projectID string) (*workloadIdenti
 	}, nil
 }
 
-func (w *workloadIdentity) gcpWorkloadIdentity(ctx context.Context, id *esv1beta1.GCPWorkloadIdentity) (string, string, error) {
+func (w *workloadIdentity) gcpWorkloadIdentity(ctx context.Context, id *esv1.GCPWorkloadIdentity) (string, string, error) {
 	var err error
 
 	projectID := id.ClusterProjectID
@@ -140,7 +140,7 @@ func (w *workloadIdentity) gcpWorkloadIdentity(ctx context.Context, id *esv1beta
 	return idPool, idProvider, nil
 }
 
-func (w *workloadIdentity) TokenSource(ctx context.Context, auth esv1beta1.GCPSMAuth, isClusterKind bool, kube kclient.Client, namespace string) (oauth2.TokenSource, error) {
+func (w *workloadIdentity) TokenSource(ctx context.Context, auth esv1.GCPSMAuth, isClusterKind bool, kube kclient.Client, namespace string) (oauth2.TokenSource, error) {
 	wi := auth.WorkloadIdentity
 	if wi == nil {
 		return nil, nil
@@ -302,7 +302,9 @@ func (g *gcpIDBindTokenGenerator) Generate(ctx context.Context, client *http.Cli
 		return nil, fmt.Errorf("could not get idbindtoken token, status: %v", resp.StatusCode)
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err

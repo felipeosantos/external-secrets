@@ -25,7 +25,7 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	esv1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1"
 )
 
 // Defined Header Keys.
@@ -107,7 +107,7 @@ type SdkClient struct {
 	client *http.Client
 }
 
-func NewSdkClient(ctx context.Context, c client.Client, storeKind, namespace string, provider *v1beta1.BitwardenSecretsManagerProvider, token string) (*SdkClient, error) {
+func NewSdkClient(ctx context.Context, c client.Client, storeKind, namespace string, provider *esv1.BitwardenSecretsManagerProvider, token string) (*SdkClient, error) {
 	httpsClient, err := newHTTPSClient(ctx, c, storeKind, namespace, provider)
 	if err != nil {
 		return nil, fmt.Errorf("error creating https client: %w", err)
@@ -244,7 +244,9 @@ func (s *SdkClient) performHTTPRequestOperation(ctx context.Context, params para
 	if err != nil {
 		return fmt.Errorf("failed to do request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		content, _ := io.ReadAll(resp.Body)

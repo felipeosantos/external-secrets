@@ -17,18 +17,13 @@ package utils
 import (
 	"bytes"
 	"context"
-	"crypto"
-	"crypto/md5" //nolint:gosec
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/sha512"
+	"crypto/sha3"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"hash"
 	"net"
 	"net/url"
 	"reflect"
@@ -47,8 +42,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
+	esv1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1"
 	esv1alpha1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1alpha1"
-	esv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
 	esmeta "github.com/external-secrets/external-secrets/apis/meta/v1"
 	"github.com/external-secrets/external-secrets/pkg/template/v2"
 	"github.com/external-secrets/external-secrets/pkg/utils/resolvers"
@@ -57,19 +52,12 @@ import (
 const (
 	errParse   = "unable to parse transform template: %s"
 	errExecute = "unable to execute transform template: %s"
-	errParsePK = "could not apply parse of private key type to %v in %v"
 )
 
 var (
 	errKeyNotFound = errors.New("key not found")
 	unicodeRegex   = regexp.MustCompile(`_U([0-9a-fA-F]{4,5})_`)
 )
-
-type SecretsClientWithDecryptData interface {
-	esv1beta1.SecretsClient
-	// GetPrivateKeyDecrypt returns the private key in PEM format, used to decrypt sensitive data
-	GetPrivateKeyDecrypt() (string, error)
-}
 
 // JSONMarshal takes an interface and returns a new escaped and encoded byte slice.
 func JSONMarshal(t any) ([]byte, error) {
@@ -88,7 +76,7 @@ func MergeByteMap(dst, src map[string][]byte) map[string][]byte {
 	return dst
 }
 
-func RewriteMap(operations []esv1beta1.ExternalSecretRewrite, in map[string][]byte) (map[string][]byte, error) {
+func RewriteMap(operations []esv1.ExternalSecretRewrite, in map[string][]byte) (map[string][]byte, error) {
 	out := in
 	var err error
 	for i, op := range operations {
@@ -109,7 +97,7 @@ func RewriteMap(operations []esv1beta1.ExternalSecretRewrite, in map[string][]by
 }
 
 // RewriteRegexp rewrites a single Regexp Rewrite Operation.
-func RewriteRegexp(operation esv1beta1.ExternalSecretRewriteRegexp, in map[string][]byte) (map[string][]byte, error) {
+func RewriteRegexp(operation esv1.ExternalSecretRewriteRegexp, in map[string][]byte) (map[string][]byte, error) {
 	out := make(map[string][]byte)
 	re, err := regexp.Compile(operation.Source)
 	if err != nil {
@@ -123,7 +111,7 @@ func RewriteRegexp(operation esv1beta1.ExternalSecretRewriteRegexp, in map[strin
 }
 
 // RewriteTransform applies string transformation on each secret key name to rewrite.
-func RewriteTransform(operation esv1beta1.ExternalSecretRewriteTransform, in map[string][]byte) (map[string][]byte, error) {
+func RewriteTransform(operation esv1.ExternalSecretRewriteTransform, in map[string][]byte) (map[string][]byte, error) {
 	out := make(map[string][]byte)
 	for key, value := range in {
 		data := map[string][]byte{
@@ -162,7 +150,7 @@ func transform(val string, data map[string][]byte) ([]byte, error) {
 }
 
 // DecodeMap decodes values from a secretMap.
-func DecodeMap(strategy esv1beta1.ExternalSecretDecodingStrategy, in map[string][]byte) (map[string][]byte, error) {
+func DecodeMap(strategy esv1.ExternalSecretDecodingStrategy, in map[string][]byte) (map[string][]byte, error) {
 	out := make(map[string][]byte, len(in))
 	for k, v := range in {
 		val, err := Decode(strategy, v)
@@ -174,31 +162,31 @@ func DecodeMap(strategy esv1beta1.ExternalSecretDecodingStrategy, in map[string]
 	return out, nil
 }
 
-func Decode(strategy esv1beta1.ExternalSecretDecodingStrategy, in []byte) ([]byte, error) {
+func Decode(strategy esv1.ExternalSecretDecodingStrategy, in []byte) ([]byte, error) {
 	switch strategy {
-	case esv1beta1.ExternalSecretDecodeBase64:
+	case esv1.ExternalSecretDecodeBase64:
 		out, err := base64.StdEncoding.DecodeString(string(in))
 		if err != nil {
 			return nil, err
 		}
 		return out, nil
-	case esv1beta1.ExternalSecretDecodeBase64URL:
+	case esv1.ExternalSecretDecodeBase64URL:
 		out, err := base64.URLEncoding.DecodeString(string(in))
 		if err != nil {
 			return nil, err
 		}
 		return out, nil
-	case esv1beta1.ExternalSecretDecodeNone:
+	case esv1.ExternalSecretDecodeNone:
 		return in, nil
 	// default when stored version is v1alpha1
 	case "":
 		return in, nil
-	case esv1beta1.ExternalSecretDecodeAuto:
-		out, err := Decode(esv1beta1.ExternalSecretDecodeBase64, in)
+	case esv1.ExternalSecretDecodeAuto:
+		out, err := Decode(esv1.ExternalSecretDecodeBase64, in)
 		if err != nil {
-			out, err := Decode(esv1beta1.ExternalSecretDecodeBase64URL, in)
+			out, err := Decode(esv1.ExternalSecretDecodeBase64URL, in)
 			if err != nil {
-				return Decode(esv1beta1.ExternalSecretDecodeNone, in)
+				return Decode(esv1.ExternalSecretDecodeNone, in)
 			}
 			return out, nil
 		}
@@ -233,7 +221,7 @@ func ValidateKeys(log logr.Logger, in map[string][]byte) error {
 
 // ConvertKeys converts a secret map into a valid key.
 // Replaces any non-alphanumeric characters depending on convert strategy.
-func ConvertKeys(strategy esv1beta1.ExternalSecretConversionStrategy, in map[string][]byte) (map[string][]byte, error) {
+func ConvertKeys(strategy esv1.ExternalSecretConversionStrategy, in map[string][]byte) (map[string][]byte, error) {
 	out := make(map[string][]byte, len(in))
 	for k, v := range in {
 		key := convert(strategy, k)
@@ -245,7 +233,7 @@ func ConvertKeys(strategy esv1beta1.ExternalSecretConversionStrategy, in map[str
 	return out, nil
 }
 
-func convert(strategy esv1beta1.ExternalSecretConversionStrategy, str string) string {
+func convert(strategy esv1.ExternalSecretConversionStrategy, str string) string {
 	rs := []rune(str)
 	newName := make([]string, len(rs))
 	for rk, rv := range rs {
@@ -255,9 +243,9 @@ func convert(strategy esv1beta1.ExternalSecretConversionStrategy, str string) st
 			rv != '.' &&
 			rv != '_' {
 			switch strategy {
-			case esv1beta1.ExternalSecretConversionDefault:
+			case esv1.ExternalSecretConversionDefault:
 				newName[rk] = "_"
-			case esv1beta1.ExternalSecretConversionUnicode:
+			case esv1.ExternalSecretConversionUnicode:
 				newName[rk] = fmt.Sprintf("_U%04x_", rv)
 			default:
 				newName[rk] = string(rv)
@@ -370,12 +358,10 @@ func IsNil(i any) bool {
 	return false
 }
 
-// ObjectHash calculates md5 sum of the data contained in the secret.
-//
-//nolint:gosec
+// ObjectHash calculates sha3 sum of the data contained in the secret.
 func ObjectHash(object any) string {
 	textualVersion := fmt.Sprintf("%+v", object)
-	return fmt.Sprintf("%x", md5.Sum([]byte(textualVersion)))
+	return fmt.Sprintf("%x", sha3.Sum224([]byte(textualVersion)))
 }
 
 func ErrorContains(out error, want string) bool {
@@ -396,8 +382,8 @@ var (
 // ValidateSecretSelector just checks if the namespace field is present/absent
 // depending on the secret store type.
 // We MUST NOT check the name or key property here. It MAY be defaulted by the provider.
-func ValidateSecretSelector(store esv1beta1.GenericStore, ref esmeta.SecretKeySelector) error {
-	clusterScope := store.GetObjectKind().GroupVersionKind().Kind == esv1beta1.ClusterSecretStoreKind
+func ValidateSecretSelector(store esv1.GenericStore, ref esmeta.SecretKeySelector) error {
+	clusterScope := store.GetObjectKind().GroupVersionKind().Kind == esv1.ClusterSecretStoreKind
 	if clusterScope && ref.Namespace == nil {
 		return errRequireNamespace
 	}
@@ -411,8 +397,8 @@ func ValidateSecretSelector(store esv1beta1.GenericStore, ref esmeta.SecretKeySe
 // cluster scoped store without namespace
 // this should replace above ValidateServiceAccountSelector once all providers
 // support referent auth.
-func ValidateReferentSecretSelector(store esv1beta1.GenericStore, ref esmeta.SecretKeySelector) error {
-	clusterScope := store.GetObjectKind().GroupVersionKind().Kind == esv1beta1.ClusterSecretStoreKind
+func ValidateReferentSecretSelector(store esv1.GenericStore, ref esmeta.SecretKeySelector) error {
+	clusterScope := store.GetObjectKind().GroupVersionKind().Kind == esv1.ClusterSecretStoreKind
 	if !clusterScope && ref.Namespace != nil && *ref.Namespace != store.GetNamespace() {
 		return errNamespaceNotAllowed
 	}
@@ -422,8 +408,8 @@ func ValidateReferentSecretSelector(store esv1beta1.GenericStore, ref esmeta.Sec
 // ValidateServiceAccountSelector just checks if the namespace field is present/absent
 // depending on the secret store type.
 // We MUST NOT check the name or key property here. It MAY be defaulted by the provider.
-func ValidateServiceAccountSelector(store esv1beta1.GenericStore, ref esmeta.ServiceAccountSelector) error {
-	clusterScope := store.GetObjectKind().GroupVersionKind().Kind == esv1beta1.ClusterSecretStoreKind
+func ValidateServiceAccountSelector(store esv1.GenericStore, ref esmeta.ServiceAccountSelector) error {
+	clusterScope := store.GetObjectKind().GroupVersionKind().Kind == esv1.ClusterSecretStoreKind
 	if clusterScope && ref.Namespace == nil {
 		return errRequireNamespace
 	}
@@ -437,8 +423,8 @@ func ValidateServiceAccountSelector(store esv1beta1.GenericStore, ref esmeta.Ser
 // cluster scoped store without namespace
 // this should replace above ValidateServiceAccountSelector once all providers
 // support referent auth.
-func ValidateReferentServiceAccountSelector(store esv1beta1.GenericStore, ref esmeta.ServiceAccountSelector) error {
-	clusterScope := store.GetObjectKind().GroupVersionKind().Kind == esv1beta1.ClusterSecretStoreKind
+func ValidateReferentServiceAccountSelector(store esv1.GenericStore, ref esmeta.ServiceAccountSelector) error {
+	clusterScope := store.GetObjectKind().GroupVersionKind().Kind == esv1.ClusterSecretStoreKind
 	if !clusterScope && ref.Namespace != nil && *ref.Namespace != store.GetNamespace() {
 		return errNamespaceNotAllowed
 	}
@@ -464,7 +450,9 @@ func NetworkValidate(endpoint string, timeout time.Duration) error {
 	if err != nil {
 		return fmt.Errorf("error accessing external store: %w", err)
 	}
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 	return nil
 }
 
@@ -546,7 +534,7 @@ func CompareStringAndByteSlices(valueString *string, valueByte []byte) bool {
 	return bytes.Equal(valueByte, []byte(*valueString))
 }
 
-func ExtractSecretData(data esv1beta1.PushSecretData, secret *corev1.Secret) ([]byte, error) {
+func ExtractSecretData(data esv1.PushSecretData, secret *corev1.Secret) ([]byte, error) {
 	var (
 		err   error
 		value []byte
@@ -575,7 +563,7 @@ func ExtractSecretData(data esv1beta1.PushSecretData, secret *corev1.Secret) ([]
 // CreateCertOpts contains options for a cert pool creation.
 type CreateCertOpts struct {
 	CABundle   []byte
-	CAProvider *esv1beta1.CAProvider
+	CAProvider *esv1.CAProvider
 	StoreKind  string
 	Namespace  string
 	Client     client.Client
@@ -598,20 +586,20 @@ func FetchCACertFromSource(ctx context.Context, opts CreateCertOpts) ([]byte, er
 	}
 
 	if opts.CAProvider != nil &&
-		opts.StoreKind == esv1beta1.ClusterSecretStoreKind &&
+		opts.StoreKind == esv1.ClusterSecretStoreKind &&
 		opts.CAProvider.Namespace == nil {
 		return nil, errors.New("missing namespace on caProvider secret")
 	}
 
 	switch opts.CAProvider.Type {
-	case esv1beta1.CAProviderTypeSecret:
+	case esv1.CAProviderTypeSecret:
 		cert, err := getCertFromSecret(ctx, opts.Client, opts.CAProvider, opts.StoreKind, opts.Namespace)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get cert from secret: %w", err)
 		}
 
 		return cert, nil
-	case esv1beta1.CAProviderTypeConfigMap:
+	case esv1.CAProviderTypeConfigMap:
 		cert, err := getCertFromConfigMap(ctx, opts.Namespace, opts.Client, opts.CAProvider)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get cert from configmap: %w", err)
@@ -686,7 +674,7 @@ func base64decode(cert []byte) ([]byte, error) {
 	}
 
 	// try decoding and test for validity again...
-	certificate, err := Decode(esv1beta1.ExternalSecretDecodeAuto, cert)
+	certificate, err := Decode(esv1.ExternalSecretDecodeAuto, cert)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode base64: %w", err)
 	}
@@ -707,7 +695,7 @@ func parseCertificateBytes(certBytes []byte) ([]byte, error) {
 	return certBytes, nil
 }
 
-func getCertFromSecret(ctx context.Context, c client.Client, provider *esv1beta1.CAProvider, storeKind, namespace string) ([]byte, error) {
+func getCertFromSecret(ctx context.Context, c client.Client, provider *esv1.CAProvider, storeKind, namespace string) ([]byte, error) {
 	secretRef := esmeta.SecretKeySelector{
 		Name: provider.Name,
 		Key:  provider.Key,
@@ -725,7 +713,7 @@ func getCertFromSecret(ctx context.Context, c client.Client, provider *esv1beta1
 	return []byte(cert), nil
 }
 
-func getCertFromConfigMap(ctx context.Context, namespace string, c client.Client, provider *esv1beta1.CAProvider) ([]byte, error) {
+func getCertFromConfigMap(ctx context.Context, namespace string, c client.Client, provider *esv1.CAProvider) ([]byte, error) {
 	objKey := client.ObjectKey{
 		Name:      provider.Name,
 		Namespace: namespace,
@@ -747,83 +735,4 @@ func getCertFromConfigMap(ctx context.Context, namespace string, c client.Client
 	}
 
 	return []byte(val), nil
-}
-
-func Decrypt(client esv1beta1.SecretsClient, strategy esv1beta1.ExternalSecretDecryptingStrategy, in []byte) ([]byte, error) {
-	switch strategy.Scheme {
-	case esv1beta1.ExternalSecretDecryptSchemeNone:
-		return in, nil
-	case esv1beta1.ExternalSecretDecryptSchemeRSAOAEP:
-
-		privateKey, err := getPrivateKeyDecryptProvider(client)
-		if err != nil {
-			return nil, err
-		}
-
-		rsaPrivateKey, err := parseRsaPrivateKeyDecryptProvider(strategy.PrivateKeyType, privateKey)
-		if err != nil {
-			return nil, err
-		}
-
-		out, err := rsa.DecryptOAEP(getHash(strategy.Hash), nil, rsaPrivateKey, in, nil)
-		if err != nil {
-			return nil, err
-		}
-		return out, nil
-	default:
-		return nil, fmt.Errorf("decrypting strategy %v is not supported", strategy.Scheme)
-	}
-}
-
-func getPrivateKeyDecryptProvider(client esv1beta1.SecretsClient) (string, error) {
-	if targetClient, ok := client.(SecretsClientWithDecryptData); ok {
-		return targetClient.GetPrivateKeyDecrypt()
-	} else {
-		return "", fmt.Errorf("client does not implement SecretsClientWithDecryptData interface")
-	}
-}
-
-func parseRsaPrivateKeyDecryptProvider(pkType esv1beta1.ExternalSecretDecryptingPKType, privateKey string) (*rsa.PrivateKey, error) {
-	pemBlock, _ := pem.Decode([]byte(privateKey))
-	if pemBlock == nil {
-		return nil, fmt.Errorf("failed to decode PEM block")
-	}
-
-	switch pkType {
-	case esv1beta1.ExternalSecretDecryptPKTypeNone:
-		return &rsa.PrivateKey{}, nil
-	case esv1beta1.ExternalSecretDecryptPKTypePKCS8:
-		parsedPrivateKey, err := x509.ParsePKCS8PrivateKey(pemBlock.Bytes)
-		if err != nil {
-			return nil, err
-		}
-		rsaPrivateKey, isValid := parsedPrivateKey.(*rsa.PrivateKey)
-		if !isValid {
-			return nil, fmt.Errorf(errParsePK, esv1beta1.ExternalSecretDecryptPKTypePKCS8, "RSA")
-		}
-		return rsaPrivateKey, nil
-	case esv1beta1.ExternalSecretDecryptPKTypePKCS1:
-		rsaPrivateKey, err := x509.ParsePKCS1PrivateKey(pemBlock.Bytes)
-		if err != nil {
-			return nil, err
-		}
-		return rsaPrivateKey, nil
-	default:
-		return nil, fmt.Errorf("parse private key %v is not supported", pkType)
-	}
-}
-
-func getHash(hash esv1beta1.ExternalSecretDecryptingHash) hash.Hash {
-	switch hash {
-	case esv1beta1.ExternalSecretDecryptHashNone:
-		return sha256.New()
-	case esv1beta1.ExternalSecretDecryptHashSHA1:
-		return crypto.SHA1.New()
-	case esv1beta1.ExternalSecretDecryptHashSHA256:
-		return sha256.New()
-	case esv1beta1.ExternalSecretDecryptHashSHA512:
-		return sha512.New()
-	default:
-		return sha256.New()
-	}
 }
