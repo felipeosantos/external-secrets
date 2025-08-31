@@ -114,7 +114,7 @@ func createConfiguration(prov *esv1.AWSProvider, assumeRoler STSProvider, loadCf
 	}
 
 	for _, aRole := range prov.AdditionalRoles {
-		stsclient := assumeRoler(cfg)
+		stsclient := assumeRoler(&cfg)
 		cfg.Credentials = stscreds.NewAssumeRoleProvider(stsclient, aRole)
 	}
 
@@ -128,7 +128,7 @@ func createConfiguration(prov *esv1.AWSProvider, assumeRoler STSProvider, loadCf
 		}
 	}
 	if prov.Role != "" {
-		stsclient := assumeRoler(cfg)
+		stsclient := assumeRoler(&cfg)
 		if sessExtID != "" || sessTags != nil {
 			cfg.Credentials = stscreds.NewAssumeRoleProvider(stsclient, prov.Role, setAssumeRoleOptionFn(sessExtID, sessTags, sessTransitiveTagKeys))
 		} else {
@@ -195,20 +195,23 @@ func NewGeneratorSession(ctx context.Context, auth esv1.AWSAuth, role, region st
 			return nil, err
 		}
 	}
-	config := aws.NewConfig()
+	awscfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
 	if credsProvider != nil {
-		config.Credentials = credsProvider
+		awscfg.Credentials = credsProvider
 	}
 	if region != "" {
-		config.Region = region
+		awscfg.Region = region
 	}
 
 	if role != "" {
-		stsclient := assumeRoler(*config)
-		config.Credentials = stscreds.NewAssumeRoleProvider(stsclient, role)
+		stsclient := assumeRoler(&awscfg)
+		awscfg.Credentials = stscreds.NewAssumeRoleProvider(stsclient, role)
 	}
-	log.Info("using aws config", "region", config.Region, "credentials", config.Credentials)
-	return config, nil
+	log.Info("using aws config", "region", awscfg.Region, "credentials", awscfg.Credentials)
+	return &awscfg, nil
 }
 
 // credsFromSecretRef pulls access-key / secret-access-key from a secretRef to
@@ -328,10 +331,10 @@ type STSprovider interface {
 	DecodeAuthorizationMessage(ctx context.Context, params *sts.DecodeAuthorizationMessageInput, optFns ...func(*sts.Options)) (*sts.DecodeAuthorizationMessageOutput, error)
 }
 
-type STSProvider func(aws.Config) STSprovider
+type STSProvider func(*aws.Config) STSprovider
 
-func DefaultSTSProvider(cfg aws.Config) STSprovider {
-	stsClient := sts.NewFromConfig(cfg, func(o *sts.Options) {
+func DefaultSTSProvider(cfg *aws.Config) STSprovider {
+	stsClient := sts.NewFromConfig(*cfg, func(o *sts.Options) {
 		o.EndpointResolverV2 = customEndpointResolver{}
 	})
 	return stsClient
