@@ -4146,9 +4146,6 @@
 <span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">senhasegura-dsm-auth</span>
 <span class="w">          </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CLIENT_SECRET</span>
 <span class="w">      </span><span class="nt">ignoreSslCertificate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"> </span><span class="c1"># Optional</span>
-<span class="w">      </span><span class="nt">privateKeySecretRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional, used only when sensitive data has been encrypted in senhasegura</span>
-<span class="w">        </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PRIVATE_KEY</span>
-<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">senhasegura-dsm-auth</span>
 </code></pre></div>
 <h3 id="clustersecretstore">ClusterSecretStore</h3>
 <div class="highlight"><pre><span></span><code><span class="nn">---</span>
@@ -4168,9 +4165,6 @@
 <span class="w">          </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CLIENT_SECRET</span>
 <span class="w">          </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">senhasegura</span><span class="w"> </span><span class="c1"># Namespace of Secret &quot;senhasegura-dsm-auth&quot;</span>
 <span class="w">      </span><span class="nt">ignoreSslCertificate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"> </span><span class="c1"># Optional</span>
-<span class="w">      </span><span class="nt">privateKeySecretRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional, used only when sensitive data has been encrypted in senhasegura</span>
-<span class="w">        </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PRIVATE_KEY</span>
-<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">senhasegura-dsm-auth</span>
 </code></pre></div>
 <hr />
 <h2 id="syncing-secrets">Syncing secrets</h2>
@@ -4222,27 +4216,10 @@
 <span class="w">    </span><span class="nt">remoteRef</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api-settings</span><span class="w"> </span><span class="c1"># Secret Identifier in senhasegura</span>
 <span class="w">      </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TOKEN</span><span class="w"> </span><span class="c1"># Optional, Key name within secret</span>
-<span class="w">  </span><span class="c1"># Define API_SETTINGS_TOKEN_ENCRYPT Kubernetes Secret key, with single secret key (TOKEN_ENCRYPT) from senhasegura as sensitive data</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">secretKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">API_SETTINGS_TOKEN_ENCRYPT</span>
-<span class="w">    </span><span class="nt">remoteRef</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api-settings</span><span class="w"> </span><span class="c1"># Secret Identifier in senhasegura</span>
-<span class="w">      </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TOKEN_ENCRYPTED</span>
-<span class="w">  </span><span class="c1"># Define API_SETTINGS_TOKEN_DECRYPT Kubernetes Secret key, with single secret key (TOKEN_ENCRYPT) from senhasegura as string</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">secretKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">API_SETTINGS_TOKEN_DECRYPT</span>
-<span class="w">    </span><span class="nt">remoteRef</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">decodingStrategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Base64</span><span class="w"> </span><span class="c1"># Required because sensitive data encrypted is returned in base64 encoding</span>
-<span class="w">      </span><span class="nt">decryptingStrategy</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">hash</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SHA1</span><span class="w"> </span><span class="c1"># Optinal, default value. At the moment, only this hash is supported</span>
-<span class="w">        </span><span class="nt">privateKeyType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PKCS8</span><span class="w"> </span><span class="c1"># Optinal, default value. At the moment, only this type is supported</span>
-<span class="w">        </span><span class="nt">scheme</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RSA-OAEP</span><span class="w"> </span><span class="c1"># Required in cases of data decrypt occurring in the external secret operator. At the moment, only this scheme is supported.</span>
-<span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api-settings</span><span class="w"> </span><span class="c1"># Secret Identifier in senhasegura</span>
-<span class="w">      </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TOKEN_ENCRYPTED</span>
 </code></pre></div>
 <p>Kubernetes Secret will be create with follow <code>.data.X</code></p>
 <div class="highlight"><pre><span></span><code><span class="nv">API_SETTINGS</span><span class="o">=</span><span class="s1">&#39;[{&quot;TOKEN&quot;:&quot;example-token-value&quot;,&quot;URL&quot;:&quot;https://example.com/api/example&quot;}]&#39;</span>
 <span class="nv">API_SETTINGS_TOKEN</span><span class="o">=</span><span class="s1">&#39;example-token-value&#39;</span>
-<span class="nv">API_SETTINGS_TOKEN_ENCRYPT</span><span class="o">=</span><span class="s1">&#39;hAZJktRFdzSkGxxiiSE46T271veCgwvC0GrY+AwDYA/KeuFZFdPgZsJ74awu1WR6x4BrbMLTXNpQw4UqChdbaM7VoKUCkPTcCU1jsveqYNisM2MNF98QjNjvp+9jXHfAsClLA5AvJxe3GjfWIi18E4PieFpATn/BTrmoklx4rSkWmfifZol7Wcny0D2fhrj/JOdxEIqowUB/tNwYzNd+lXgm55wea+G3YnD3Fr4ARaCCaQMUcdW9Kgx7mmZGZE3xDAhs8WMfpe9xVZ17Ca7Sw2r1JKS0o0fYiZNHUmCXVsP9O+//+0sfEtETiVUF0jItrwlK4GL8+bVcXQ9N2TW7+g==&#39;</span>
-<span class="nv">API_SETTINGS_TOKEN_DECRYPT</span><span class="o">=</span><span class="s1">&#39;a1b2c3d4&#39;</span>
 </code></pre></div>
 <hr />
 <h3 id="sync-dsm-secrets-using-secret-identifiers-with-automatically-name-assignments">Sync DSM secrets using Secret Identifiers with automatically name assignments</h3>
